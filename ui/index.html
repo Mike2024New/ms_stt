@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ms_stt — Панель управления</title>
+    <style>
+        :root {
+          --accent: #d8706c;
+          --accent-hover: #e3827e;
+          --accent-soft: rgba(216, 112, 108, 0.15);
+          --recording: #e05252;
+        }
+        [data-theme="dark"] {
+          --bg-main: #18181a;
+          --bg-card: #222226;
+          --bg-input: #141416;
+          --border: #36363c;
+          --text-main: #ececef;
+          --text-muted: #9898a3;
+        }
+        [data-theme="light"] {
+          --bg-main: #f3f2f2;
+          --bg-card: #ffffff;
+          --bg-input: #fafafa;
+          --border: #dcd8d8;
+          --text-main: #222225;
+          --text-muted: #6e6e77;
+        }
+        * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        body {
+          background-color: var(--bg-main);
+          color: var(--text-main);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+          padding: 20px;
+          transition: background-color 0.2s, color 0.2s;
+        }
+        .window {
+          width: 100%;
+          max-width: 780px;
+        }
+        .top-bar {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+        }
+        .tabs {
+          display: flex;
+          gap: 4px;
+        }
+        .tab-btn {
+          background: var(--bg-input);
+          color: var(--text-muted);
+          border: 1.5px solid var(--border);
+          border-bottom: none;
+          padding: 10px 24px;
+          border-radius: 10px 10px 0 0;
+          cursor: pointer;
+          font-weight: 600;
+          font-size: 14px;
+          transition: all 0.15s;
+        }
+        .tab-btn.active {
+          background: var(--bg-card);
+          color: var(--accent);
+          border-color: var(--accent);
+          position: relative;
+          z-index: 2;
+        }
+        .top-controls {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding-bottom: 8px;
+        }
+        .status-badge {
+          font-size: 12px;
+          padding: 4px 10px;
+          border-radius: 20px;
+          border: 1px solid var(--accent);
+          background: var(--accent-soft);
+          color: var(--accent);
+          font-weight: 600;
+        }
+        .theme-toggle {
+          background: var(--bg-card);
+          color: var(--text-main);
+          border: 1.5px solid var(--border);
+          padding: 5px 12px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 13px;
+        }
+        .theme-toggle:hover {
+          border-color: var(--accent);
+        }
+        .card {
+          background: var(--bg-card);
+          border: 1.5px solid var(--accent);
+          border-radius: 0 12px 12px 12px;
+          padding: 24px;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+          margin-top: -1.5px;
+        }
+        .tab-content {
+          display: none;
+        }
+        .tab-content.active {
+          display: block;
+        }
+        .hint {
+          color: var(--text-muted);
+          font-size: 14px;
+          margin-bottom: 16px;
+          line-height: 1.4;
+        }
+        .text-area-wrapper {
+          position: relative;
+          margin-bottom: 20px;
+        }
+        textarea {
+          width: 100%;
+          height: 240px;
+          background: var(--bg-input);
+          color: var(--text-main);
+          border: 1.5px solid var(--border);
+          border-radius: 10px;
+          padding: 16px;
+          font-size: 16px;
+          line-height: 1.5;
+          resize: vertical;
+          outline: none;
+          transition: border-color 0.2s;
+        }
+        textarea:focus {
+          border-color: var(--accent);
+        }
+        .meta-bar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 6px;
+          font-size: 12px;
+          color: var(--text-muted);
+        }
+        .copy-btn {
+          background: transparent;
+          color: var(--accent);
+          border: 1px solid var(--accent);
+          padding: 3px 10px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 12px;
+        }
+        .copy-btn:hover {
+          background: var(--accent-soft);
+        }
+        .bottom-controls {
+          display: flex;
+          justify-content: flex-end;
+          align-items: center;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+        select, .btn {
+          height: 42px;
+          padding: 0 16px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          border: 1.5px solid var(--border);
+          background: var(--bg-input);
+          color: var(--text-main);
+          transition: all 0.15s;
+        }
+        select:hover, .btn:hover:not(:disabled) {
+          border-color: var(--accent);
+        }
+        .btn:disabled, select:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        .btn-primary {
+          background: var(--accent);
+          border-color: var(--accent);
+          color: #ffffff;
+          min-width: 145px;
+        }
+        .btn-primary:hover:not(:disabled) {
+          background: var(--accent-hover);
+        }
+        .btn-recording {
+          background: var(--recording) !important;
+          border-color: var(--recording) !important;
+          animation: pulse 1.2s infinite;
+        }
+        @keyframes pulse {
+          0% { box-shadow: 0 0 0 0 rgba(224, 82, 82, 0.5); }
+          70% { box-shadow: 0 0 0 10px rgba(224, 82, 82, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(224, 82, 82, 0); }
+        }
+        .log-box {
+          width: 100%;
+          height: 310px;
+          background: var(--bg-input);
+          color: var(--text-main);
+          border: 1.5px solid var(--border);
+          border-radius: 10px;
+          padding: 12px;
+          font-family: "Consolas", "Courier New", monospace;
+          font-size: 12px;
+          overflow-y: auto;
+          white-space: pre-wrap;
+          margin-bottom: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="window">
+    <div class="top-bar">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('main')">1. Распознавание</button>
+            <button class="tab-btn" onclick="switchTab('logs')">2. Логи</button>
+        </div>
+        <div class="top-controls">
+            <span id="statusBadge" class="status-badge">Загрузка...</span>
+            <button id="themeBtn" class="theme-toggle" onclick="toggleTheme()">Светлая тема</button>
+        </div>
+    </div>
+    <div class="card">
+        <div id="tab-main" class="tab-content active">
+            <p class="hint">
+                Выберите модель внизу, нажмите <b>speech_start</b> и произнесите фразу. Нажмите <b>speech_end</b> для
+                распознавания, или <b>повтор</b> для перепроверки последней записи.
+            </p>
+            <div class="text-area-wrapper">
+                <textarea id="resultText" placeholder="Здесь появится распознанный текст..."></textarea>
+                <div class="meta-bar">
+                    <span id="timingInfo">Тайминги: —</span>
+                    <button class="copy-btn" onclick="copyText()">Копировать текст</button>
+                </div>
+            </div>
+            <div class="bottom-controls">
+                <select id="modelSelect" onchange="changeModel()" title="Смена модели">
+                    <option value="">Загрузка моделей...</option>
+                </select>
+                <button id="repeatBtn" class="btn" onclick="repeatSpeech()" disabled>повтор</button>
+                <button id="recordBtn" class="btn btn-primary" onclick="toggleSpeech()">speech_start</button>
+            </div>
+        </div>
+        <div id="tab-logs" class="tab-content">
+            <p class="hint">Последние записи системного журнала (распознанный текст в логах не сохраняется).</p>
+            <div id="logBox" class="log-box">Загрузка логов...</div>
+            <div class="bottom-controls">
+                <button class="btn" onclick="fetchLogs()">Обновить логи</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let isRecording = false;
+    let currentState = "stopped";
+
+    function initTheme() {
+      const saved = localStorage.getItem("ms_stt_theme") || "dark";
+      document.documentElement.setAttribute("data-theme", saved);
+      document.getElementById("themeBtn").textContent = saved === "dark" ? "Светлая тема" : "Тёмная тема";
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("ms_stt_theme", next);
+      document.getElementById("themeBtn").textContent = next === "dark" ? "Светлая тема" : "Тёмная тема";
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll(".tab-btn").forEach((b, idx) => {
+        b.classList.toggle("active", (tabName === "main" && idx === 0) || (tabName === "logs" && idx === 1));
+      });
+      document.getElementById("tab-main").classList.toggle("active", tabName === "main");
+      document.getElementById("tab-logs").classList.toggle("active", tabName === "logs");
+      if (tabName === "logs") {
+        fetchLogs();
+      }
+    }
+
+    async function refreshState() {
+      try {
+        const [healthRes, modelsRes] = await Promise.all([
+          fetch("/health"),
+          fetch("/models")
+        ]);
+        const health = await healthRes.json();
+        const modelsData = await modelsRes.json();
+        currentState = health.engine_state;
+        // FIX: добавлены backticks для шаблонной строки
+        document.getElementById("statusBadge").textContent = `Статус: ${currentState}`;
+        document.getElementById("repeatBtn").disabled = !health.has_cached_audio || isRecording;
+        const select = document.getElementById("modelSelect");
+        select.innerHTML = "";
+        if (modelsData.models.length === 0) {
+          // FIX: добавлены backticks
+          select.innerHTML = `<option value="">Нет моделей в models/</option>`;
+        } else {
+          modelsData.models.forEach(m => {
+            const opt = document.createElement("option");
+            opt.value = m.name;
+            // FIX: добавлены backticks
+            opt.textContent = `${m.name} (${m.engine})`;
+            if (m.active) opt.selected = true;
+            select.appendChild(opt);
+          });
+        }
+      } catch (e) {
+        document.getElementById("statusBadge").textContent = "Нет связи с API";
+      }
+    }
+
+    async function changeModel() {
+      const modelName = document.getElementById("modelSelect").value;
+      if (!modelName) return;
+      setBusy(true, "Загрузка модели...");
+      try {
+        const res = await fetch("/set-model", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ model_name: modelName })
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          alert("Ошибка смены модели: " + err.detail);
+        }
+      } finally {
+        setBusy(false);
+        await refreshState();
+      }
+    }
+
+    async function toggleSpeech() {
+      const recordBtn = document.getElementById("recordBtn");
+      if (!isRecording) {
+        if (currentState === "stopped") {
+          setBusy(true, "Загрузка модели...");
+          const startRes = await fetch("/start", { method: "POST" });
+          setBusy(false);
+          if (!startRes.ok) {
+            const err = await startRes.json();
+            alert("Не удалось запустить движок: " + err.detail);
+            return;
+          }
+        }
+        const res = await fetch("/speech_start", { method: "POST" });
+        if (res.ok) {
+          isRecording = true;
+          recordBtn.textContent = "speech_end";
+          recordBtn.classList.add("btn-recording");
+          document.getElementById("modelSelect").disabled = true;
+          document.getElementById("repeatBtn").disabled = true;
+          document.getElementById("statusBadge").textContent = "Статус: recording";
+        } else {
+          const err = await res.json();
+          alert("Ошибка: " + err.detail);
+        }
+      } else {
+        isRecording = false;
+        recordBtn.classList.remove("btn-recording");
+        setBusy(true, "Распознавание...");
+        try {
+          const res = await fetch("/speech_end", { method: "POST" });
+          const data = await res.json();
+          if (res.ok) {
+            document.getElementById("resultText").value = data.text;
+            // FIX: добавлены backticks
+            document.getElementById("timingInfo").textContent =
+              `Тайминги: запись = ${data.duration_sec}с | модель = ${data.processing_sec}с | total = ${data.total_sec}с`;
+          } else {
+            alert("Ошибка распознавания: " + data.detail);
+          }
+        } finally {
+          setBusy(false);
+          recordBtn.textContent = "speech_start";
+          await refreshState();
+        }
+      }
+    }
+
+    async function repeatSpeech() {
+      setBusy(true, "Повтор...");
+      try {
+        const res = await fetch("/repeat", { method: "POST" });
+        const data = await res.json();
+        if (res.ok) {
+          document.getElementById("resultText").value = data.text;
+          // FIX: добавлены backticks
+          document.getElementById("timingInfo").textContent =
+            `Повтор (${data.model}): аудио = ${data.duration_sec}с | модель = ${data.processing_sec}с`;
+        } else {
+          alert("Ошибка повтора: " + data.detail);
+        }
+      } finally {
+        setBusy(false);
+        await refreshState();
+      }
+    }
+
+    function setBusy(busy, label) {
+      const recordBtn = document.getElementById("recordBtn");
+      recordBtn.disabled = busy;
+      document.getElementById("repeatBtn").disabled = busy;
+      document.getElementById("modelSelect").disabled = busy;
+      if (busy && label) {
+        recordBtn.textContent = label;
+      } else if (!busy && !isRecording) {
+        recordBtn.textContent = "speech_start";
+      }
+    }
+
+    function copyText() {
+      const area = document.getElementById("resultText");
+      if (!area.value) return;
+      navigator.clipboard.writeText(area.value);
+    }
+
+    async function fetchLogs() {
+      const logBox = document.getElementById("logBox");
+      try {
+        const res = await fetch("/logs?lines=150");
+        const data = await res.json();
+        logBox.textContent = data.logs;
+        logBox.scrollTop = logBox.scrollHeight;
+      } catch (e) {
+        logBox.textContent = "Ошибка загрузки логов.";
+      }
+    }
+
+    initTheme();
+    refreshState();
+</script>
+</body>
+</html>

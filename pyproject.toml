@@ -1,5 +1,5 @@
 [project]
-name = "srv_stt"
+name = "ms_stt"
 version = "0.1.0"
 description = "Local STT microservice with Whisper and Vosk"
 requires-python = ">=3.10"

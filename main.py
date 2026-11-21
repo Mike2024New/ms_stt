@@ -84,6 +84,20 @@ async def request_tracing_middleware(request: Request, call_next):
 
 app.include_router(create_router(engine))
 
+# подключение фронтенда
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from app.config import BASE_DIR
+
+UI_DIR = BASE_DIR / "ui"
+if UI_DIR.exists():
+    app.mount("/ui", StaticFiles(directory=str(UI_DIR)), name="ui")
+
+
+    @app.get("/", include_in_schema=False)
+    def serve_ui():
+        return FileResponse(str(UI_DIR / "index.html"))
+
 if __name__ == "__main__":
     logger.info(f"Запуск HTTP-сервера на {config.host}:{config.port}")
     uvicorn.run(app, host=config.host, port=config.port, log_config=None)

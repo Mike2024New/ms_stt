@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from loguru import logger
 from app.engine import STTEngine
-from app.logger import get_request_id
+from app.logger import get_request_id, LOGS_DIR
 
 
 class SetModelRequest(BaseModel):
@@ -160,5 +160,15 @@ def create_router(engine: STTEngine) -> APIRouter:
         except Exception as e:
             logger.error(f"Ошибка при /repeat: {e}")
             raise HTTPException(status_code=500, detail=str(e))
+
+    @router.get("/logs")
+    def get_logs(lines: int = 150):
+        """Возвращает последние N строк из файла логов для отображения в UI."""
+        log_file = LOGS_DIR / "stt_service.log"
+        if not log_file.exists():
+            return {"logs": "Файл логов пока пуст."}
+        with open(log_file, "r", encoding="utf-8") as f:
+            content = f.readlines()
+        return {"logs": "".join(content[-lines:])}
 
     return router
